@@ -560,9 +560,12 @@ function lanHosts() {
 server.listen(PORT, () => {
   const db = readDb();
   const users = allUsers(db);
+  const slugs = Object.keys(db.schools || {});
+  const first = slugs[0] || '<slug>';
   console.log('');
-  console.log('  前端（只读，可分享）  http://localhost:' + PORT + '/?s=cqtbu');
+  console.log('  前端（只读，可分享）  http://localhost:' + PORT + '/?s=' + first);
   console.log('  后台（仅本机）        http://localhost:' + PORT + '/admin/');
+  console.log('  学校                  ' + (slugs.length ? slugs.join(', ') : '（尚无数据）'));
   console.log('  管理账号              ' + (users.map((u) => u.user).join(', ') || '（尚未设置）'));
   console.log('  访问策略              后台' + (REMOTE_ADMIN ? '允许远程访问（ADMIN_REMOTE=1）' : '仅限本机，其他设备 403'));
   if (!users.some((u) => u.hash)) {
