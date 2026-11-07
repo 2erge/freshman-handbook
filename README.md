@@ -379,6 +379,14 @@ Actions 自动重新导出并发布。打开线上地址时按 **`Ctrl + F5` 强
 
 > **`git push` 卡住没有任何输出**（不是报错，是干等着）：这是直连 `github.com:443` 被阻断。浏览器能上网是因为走了系统代理，而 git 不读系统代理设置，需要显式指定 —— `git -c http.proxy=http://127.0.0.1:7897 push`（端口换成你自己代理软件的实际端口）。
 
+**改完线上没变化？按这个顺序查：**
+
+1. **有没有提交没推出去。** 不要用 `git status` 判断「已同步」—— 本机可能根本没有 `refs/remotes/origin/*`，此时 `git status` 不显示 ahead/behind，看起来永远是干净的。真实状态以 `git ls-remote origin refs/heads/main` 为准，它返回的 sha 要和 `git rev-parse HEAD` 一致。
+2. **改动是否真的写进了 `db.json`。** `git status` 应该出现 `M server/data/db.json`；一个字符的差别也能检测到。完全没有变化，说明后台没点「保存」，或改的内容与原来完全相同。
+3. **Actions 有没有跑。** 没跑 = 提交没到远程；跑了但失败，点进去看日志。
+4. **浏览器缓存。** `Ctrl + F5` 强刷。
+5. 上面都正常却不生效：`git commit --allow-empty -m "rebuild" && git push` 强制触发一次构建。
+
 ---
 
 ## 十、后台安全（只有你能登录）
