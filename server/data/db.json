@@ -33,7 +33,7 @@
         "contact": {
           "name": "菜菜学长",
           "wechatId": "b1628190477",
-          "qr": "/uploads/mw5tp5u0_3273e29e05.png",
+          "qr": "/uploads/mw5tv2y6_bd818dab9b.png",
           "tip": "长按识别二维码，或复制微信号添加"
         }
       },
@@ -916,18 +916,6 @@
                   "text": "家庭经济困难学生可申请助学贷款与勤工助学岗位，入学时走「绿色通道」。"
                 }
               ]
-            },
-            {
-              "id": "e_schedule",
-              "title": "课表查询",
-              "subtitle": "上课安排快速查看",
-              "icon": "📅",
-              "type": "link",
-              "url": "",
-              "lock": {
-                "enabled": false
-              },
-              "blocks": []
             },
             {
               "id": "e_transfer",
