@@ -736,18 +736,6 @@
                   "text": "考试周座位紧张，建议提前一天晚上预约。"
                 }
               ]
-            },
-            {
-              "id": "e_feedback",
-              "title": "意见收集",
-              "subtitle": "",
-              "icon": "📮",
-              "type": "link",
-              "url": "",
-              "lock": {
-                "enabled": false
-              },
-              "blocks": []
             }
           ]
         },
