@@ -30,7 +30,7 @@ node server/server.js
 
 后台没有默认密码，第一次用要先设一个（只存 scrypt 哈希，不存明文）：
 
-> 仓库里的 `db.json` 已经把密码哈希清空了（避免把密码哈希推到公开仓库），所以 clone 下来必须先执行下面第一条命令，否则后台登录会一直返回「账号或密码错误」；启动日志也会提示「还没有设置管理密码」。
+> 仓库里的 `db.json` 已经把密码哈希清空了（避免把密码哈希推到公开仓库），所以 clone 下来必须先执行下面第一条命令，否则后台登录会一直返回「账号或密码错误」；启动日志也会提示「还没有设置管理密码」。密码只写进 `server/data/admin.local.json`（已被 `.gitignore` 忽略），不会进版本库。
 
 ```bash
 node server/setpass.js              # 随机生成 16 位强密码并打印，只显示一次
@@ -48,7 +48,9 @@ node server/setpass.js 新密码 用户名  # 指定账号，默认 admin
 新生手册/                  # 仓库根目录即项目根目录
 ├── server/
 │   ├── server.js          # 全部后端：静态托管 + REST API + 会话 + 正文遮蔽 + 后台访问边界
-│   ├── setpass.js         # 设置后台密码（scrypt 哈希写入 db.json），无参数则随机生成
+│   ├── setpass.js         # 设置后台密码（scrypt 哈希写入 admin.local.json，不入库），无参数则随机生成
+│   ├── export-static.js   # 导出纯静态站到 dist/（给 GitHub Pages 用）
+│   ├── lib/public.js      # 对外公开视图（在线服务与静态导出共用同一份逻辑）
 │   └── data/db.json       # 数据文件（学校 / 模块 / 条目 / 正文）；仓库中不含密码哈希
 ├── web/                   # 前台（消费端）
 │   ├── index.html
@@ -59,6 +61,8 @@ node server/setpass.js 新密码 用户名  # 指定账号，默认 admin
 │   ├── admin.css
 │   └── admin.js           # 树形结构 + 表单 + 实时预览（postMessage）
 ├── uploads/               # 后台上传的图片（自动创建，文件名带随机串）
+├── .github/workflows/
+│   └── pages.yml          # push 到 main 自动导出并发布到 GitHub Pages
 └── docs/
     ├── STRUCTURE.md       # 原产品拆解与数据模型对照
     └── screenshots/       # README 用的界面截图
@@ -309,15 +313,39 @@ pm2 start server/server.js --name handbook && pm2 save
 2. 想在服务器上远程管理，必须显式加 `ADMIN_REMOTE=1` 启动，并先执行 `node server/setpass.js` 设强密码；
 3. 页面是 H5，微信里直接打开就能看，**不需要做小程序**。
 
-### D. 只想给人看，不要后台
+### D. 给同学随时扫码看 —— 发布到 GitHub Pages（推荐）
 
-密码墙是服务端实现的，静态化之后就没了。确实只需要只读展示时：
+仓库自带静态导出脚本 + Actions 工作流，推一次代码就自动上线：**永久免费、没有休眠、没有冷启动**，链接可以长期印在二维码上。
 
 ```bash
-curl -s http://localhost:5173/api/school/cqtbu > data.json
+node server/export-static.js        # 导出到 dist/
+node server/export-static.js --out site   # 换个输出目录
 ```
 
-把 `web/` 和这份 JSON 丢到 GitHub Pages / Vercel / 对象存储静态托管；前端要改成读 `data.json` 而不是 `/api/school/cqtbu`，并且把所有条目的 `lock.enabled` 设为 `false`（否则访客点进去只能看到 20% 正文）。
+产物是纯静态站，全部用相对路径，可直接放在 Pages 的子路径下：
+
+```
+dist/
+├── index.html  style.css  app.js  .nojekyll
+├── api/schools.json                 # 学校列表
+├── api/school/cqtbu.json            # 首页数据（分区 + 条目摘要）
+├── api/entry/cqtbu/<id>.json        # 每个条目的正文
+└── uploads/                         # 图片
+```
+
+发布三步：
+
+1. 仓库 → `Settings` → `Pages` → `Build and deployment` → Source 选 **GitHub Actions**
+2. `git push` 到 `main`，`.github/workflows/pages.yml` 会自动导出并发布（也可在 Actions 页手动 `Run workflow`）
+3. 上线地址：`https://<你的用户名>.github.io/freshman-handbook/?s=cqtbu`
+
+把带 `?s=cqtbu` 的完整地址生成二维码即可；换学校时改 `?s=` 后面的 slug。
+
+三条必须知道的限制：
+
+1. **静态站没有服务端，密码解锁功能不可用。** 导出脚本发现仍有 `lock.enabled = true` 的条目会直接报错退出，避免把半截页面发出去。要给同学看全文，就先把这些条目改为公开。
+2. **内容不是实时的。** 后台改完要重新 push（或手动触发工作流）才会同步到线上。
+3. **后台不会上 Pages。** `/admin/` 是本机工具，继续在本地 `node server/server.js` 里用；Pages 上只有只读前台。
 
 ---
 
@@ -328,7 +356,7 @@ curl -s http://localhost:5173/api/school/cqtbu > data.json
 | 层 | 做法 | 对方会看到 |
 |---|---|---|
 | 网络边界 | `/admin` 与 `/api/admin/*` 只接受本机来源（环回地址，或本机网卡 IP），其余请求在路由之前就被拦下 | 纯文本 `403 · 后台仅限本机访问` |
-| 密码 | scrypt 加盐哈希存入 `db.json`，不设默认密码 | 首次启动必须显式设密码 |
+| 密码 | scrypt 加盐哈希存入 `server/data/admin.local.json`（不入库），不设默认密码 | 首次启动必须显式设密码 |
 | 暴力尝试 | 同一来源连错 5 次，锁定 10 分钟 | `429` + 剩余秒数 |
 | 会话 | token 存 `sessionStorage`，8 小时滑动过期，并绑定来源 IP | 关浏览器 / 退出即失效 |
 | 信息暴露 | `db.json` 的 `users` 不出现在任何公开接口；`/api/net` 需登录 | — |

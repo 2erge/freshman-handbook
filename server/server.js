@@ -68,8 +68,30 @@ function verifyPass(pass, stored) {
   return crypto.timingSafeEqual(a, b);
 }
 
+/**
+ * 本地凭据文件：server/data/admin.local.json（已被 .gitignore 忽略）
+ * 用途：让「仓库里的 db.json」保持 hash 为空、可以安全公开，
+ *       而本机的登录密码单独存在这个不入库的文件里。
+ */
+function localAdminUsers() {
+  try {
+    const j = JSON.parse(fs.readFileSync(path.join(__dirname, 'data', 'admin.local.json'), 'utf8'));
+    return Array.isArray(j.users) ? j.users : [];
+  } catch {
+    return [];
+  }
+}
+
+/** db.json 里的账号 + 本地凭据文件，同名时以本地文件为准 */
+function allUsers(db) {
+  const map = new Map();
+  for (const u of db.users || []) if (u && u.user) map.set(u.user, u);
+  for (const u of localAdminUsers()) if (u && u.user) map.set(u.user, u);
+  return [...map.values()];
+}
+
 function getUser(db, name) {
-  return (db.users || []).find((u) => u.user === name) || null;
+  return allUsers(db).find((u) => u.user === name) || null;
 }
 function userSecret(u) {
   return (u && (u.hash || u.pass)) || '';
@@ -241,29 +263,8 @@ function readBody(req) {
 }
 
 /* ---------------- 业务：对外视图 ---------------- */
-function publicSchool(school) {
-  const sections = (school.sections || [])
-    .filter((s) => s.visible !== false)
-    .map((s) => ({
-      id: s.id,
-      title: s.title,
-      subtitle: s.subtitle || '',
-      layout: s.layout,
-      countText: s.countText || '',
-      entries: (s.entries || []).map((e, i) => ({
-        id: e.id,
-        title: e.title,
-        subtitle: e.subtitle || '',
-        icon: e.icon || '',
-        type: e.type || 'article',
-        url: e.url || '',
-        order: i,
-        locked: !!(e.lock && e.lock.enabled),
-      })),
-    }));
-  const { users, ...rest } = school;
-  return { ...rest, sections };
-}
+/* 实现见 server/lib/public.js —— 静态导出脚本复用同一份逻辑 */
+const { publicSchool } = require('./lib/public');
 
 function findEntry(db, slug, entryId) {
   const school = db.schools[slug];
@@ -558,13 +559,13 @@ function lanHosts() {
 
 server.listen(PORT, () => {
   const db = readDb();
-  const users = (db.users || []).map((u) => u.user);
+  const users = allUsers(db);
   console.log('');
   console.log('  前端（只读，可分享）  http://localhost:' + PORT + '/?s=cqtbu');
   console.log('  后台（仅本机）        http://localhost:' + PORT + '/admin/');
-  console.log('  管理账号              ' + (users.join(', ') || '（尚未设置）'));
+  console.log('  管理账号              ' + (users.map((u) => u.user).join(', ') || '（尚未设置）'));
   console.log('  访问策略              后台' + (REMOTE_ADMIN ? '允许远程访问（ADMIN_REMOTE=1）' : '仅限本机，其他设备 403'));
-  if (!users.length || !(db.users || []).some((u) => u.hash)) {
+  if (!users.some((u) => u.hash)) {
     console.log('  ⚠ 还没有设置管理密码，执行：node server/setpass.js 你的密码');
   }
   console.log('');

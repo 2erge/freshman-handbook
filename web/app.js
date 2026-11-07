@@ -5,6 +5,12 @@
   var params = new URLSearchParams(location.search);
   var SLUG = params.get('s') || 'cqtbu';
   var PREVIEW = params.get('preview') === '1';
+  /* 静态导出模式：GitHub Pages 等纯静态托管下，接口改为读取同目录的 .json 文件 */
+  var STATIC = !!window.HANDBOOK_STATIC;
+  function apiUrl(p) {
+    if (!STATIC) return p;
+    return p.replace(/^\//, '') + '.json';
+  }
   var SCHOOL = null;
   var inbox = {}; // entryId -> 已解锁的 blocks
 
@@ -296,7 +302,7 @@
       return;
     }
     content.innerHTML = '<div class="art-p" style="color:#9aa5b6">加载中…</div>';
-    fetch('/api/entry/' + encodeURIComponent(SLUG) + '/' + encodeURIComponent(entry.id))
+    fetch(apiUrl('/api/entry/' + encodeURIComponent(SLUG) + '/' + encodeURIComponent(entry.id)))
       .then(function (r) { return r.json(); })
       .then(function (d) {
         content.innerHTML = '';
@@ -432,6 +438,7 @@
     function submit() {
       var pw = input.value.trim();
       if (!pw) { err.textContent = '请输入密码'; return; }
+      if (STATIC) { err.textContent = '这是离线静态版本，请在联网的原站解锁'; return; }
       btn.disabled = true; btn.textContent = '验证中…';
       fetch('/api/entry/' + encodeURIComponent(SLUG) + '/' + encodeURIComponent(entry.id) + '/unlock', {
         method: 'POST',
@@ -518,7 +525,7 @@
       return;
     }
 
-    fetch('/api/school/' + encodeURIComponent(SLUG))
+    fetch(apiUrl('/api/school/' + encodeURIComponent(SLUG)))
       .then(function (r) { return r.json(); })
       .then(function (d) {
         if (d.error) { document.getElementById('page').innerHTML = '<div class="search-empty">' + esc(d.error) + '</div>'; return; }

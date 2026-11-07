@@ -52,9 +52,8 @@
               "icon": "📶",
               "type": "article",
               "lock": {
-                "enabled": true,
+                "enabled": false,
                 "freeRatio": 0.35,
-                "password": "1234",
                 "contact": "微信：demo-wechat",
                 "hint": ""
               },
@@ -120,9 +119,8 @@
               "icon": "🛏️",
               "type": "article",
               "lock": {
-                "enabled": true,
+                "enabled": false,
                 "freeRatio": 0.3,
-                "password": "1234",
                 "contact": "微信：demo-wechat",
                 "hint": ""
               },
@@ -416,9 +414,8 @@
               "icon": "🗓️",
               "type": "article",
               "lock": {
-                "enabled": true,
+                "enabled": false,
                 "freeRatio": 0.2,
-                "password": "1234",
                 "contact": "微信：demo-wechat",
                 "hint": ""
               },
@@ -660,9 +657,8 @@
               "icon": "💻",
               "type": "article",
               "lock": {
-                "enabled": true,
+                "enabled": false,
                 "freeRatio": 0.25,
-                "password": "1234",
                 "contact": "微信：demo-wechat",
                 "hint": ""
               },

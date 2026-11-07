@@ -12,6 +12,12 @@ npm-debug.log*
 .env.*
 !.env.example
 
+# 本机后台登录凭据（scrypt 哈希，由 node server/setpass.js 生成本地文件）
+server/data/admin.local.json
+
+# 静态导出产物（由 CI 现场生成后直接发布，不入库）
+dist/
+
 # 编辑器与系统
 .vscode/
 .idea/
