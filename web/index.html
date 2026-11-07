@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#eef3fb">
+<title>新生手册</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="phone" id="phone">
+  <header class="topbar" id="topbar">
+    <div class="brand">
+      <b id="brandName">加载中…</b>
+      <span id="brandSub"></span>
+    </div>
+    <div class="top-actions">
+      <button class="icon-btn" id="btnSearch" aria-label="搜索">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      </button>
+    </div>
+  </header>
+
+  <div class="searchbar" id="searchbar">
+    <input id="searchInput" type="search" placeholder="搜索手册内容，如「宿舍」「报到」" autocomplete="off">
+    <button id="searchCancel">取消</button>
+  </div>
+
+  <main id="page" class="page"></main>
+
+  <footer class="footer" id="footer"></footer>
+</div>
+
+<div class="pvw-badge" id="pvwBadge" hidden>预览模式</div>
+<div id="sheetRoot"></div>
+<script src="/app.js"></script>
+</body>
+</html>

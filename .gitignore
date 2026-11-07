@@ -1,0 +1,20 @@
+# 依赖（本项目零依赖，留作兜底）
+node_modules/
+
+# 运行时临时文件
+server/data/db.json.tmp
+server/data/*.bak
+*.log
+npm-debug.log*
+
+# 环境变量 / 密钥
+.env
+.env.*
+!.env.example
+
+# 编辑器与系统
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini
