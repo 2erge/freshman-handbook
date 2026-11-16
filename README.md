@@ -344,6 +344,8 @@ git push
 
 **`git push` 卡住没有任何输出**（不是报错，是干等着）：多半是直连 `github.com:443` 被阻断。浏览器能上网是因为走了系统代理，而 git 不读系统代理设置，需要显式指定 —— `git -c http.proxy=http://127.0.0.1:7897 push`（端口换成你代理软件的实际端口）。
 
+反过来的情况同样存在：**代理软件没开时，带代理参数反而会失败**（`Failed to connect to github.com:443 over proxy 127.0.0.1`）。所以先判断代理端口通不通，再决定带不带参数；直连有空时（`curl -I https://github.com` 能在几秒内返回 200）也可以直接 `git push`。
+
 **改完线上没变化？按这个顺序查：**
 
 1. **有没有提交没推出去。** 不要用 `git status` 判断「已同步」—— 某些环境下本地没有 `refs/remotes/origin/*`，`git status` 不显示 ahead/behind，看起来永远是干净的。真实状态以 `git ls-remote origin refs/heads/main` 为准，返回的 sha 要和 `git rev-parse HEAD` 一致。
