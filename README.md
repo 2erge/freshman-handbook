@@ -2,7 +2,7 @@
 
 一套可直接复用的「新生手册」系统：**前台 H5 展示 + 后台内容管理 + 实时预览**。把内容换成你自己学校的信息，就能直接上线。
 
-- 前台：`http://localhost:5173/?s=<slug>`（手机端视图，桌面自动居中）
+- 前台：`http://localhost:5173/?s=<slug>`（手机端视图，桌面自动居中；端口可改，见下）
 - 后台：`http://localhost:5173/admin/`（**默认仅本机可访问**，密码用 `node server/setpass.js` 设置）
 - 零第三方依赖：只用 Node 内置模块，`node server/server.js` 即可跑起来
 
@@ -37,7 +37,9 @@ node server/server.js
 
 `npm start` 等价（无依赖，不需要 `npm install`）。需要 **Node 18+**（用到 `node:` 前缀模块与 `fetch`），本项目在 Node 22 下验证通过。
 
-默认端口 5173，可改：`PORT=8080 node server/server.js`。
+默认端口 **5173**，被占用时换一个即可：`PORT=5174 node server/server.js`（Windows PowerShell 用 `$env:PORT=5174; node server/server.js`）。
+
+> 常见冲突：Vite 的默认端口也是 5173。若本机有前端项目正跑着 `npm run dev`，手册会起不来或看起来"能打开但没内容"。判断方法：访问 `/api/school/<slug>`，返回 JSON 才是手册服务；返回 404 说明端口上是别的程序。
 
 ### 第一次启动先设密码
 
@@ -327,7 +329,7 @@ dist/
 内容改动**只落在 `server/data/db.json` 一个文件里**（图片在 `uploads/`），前端代码不用动。四步：
 
 1. **起后台**（已开着就跳过）：`node server/server.js`
-2. **改内容**：打开 `http://localhost:5173/admin/`，编辑完点「保存」
+2. **改内容**：打开 `http://localhost:5173/admin/`（换过端口就改成对应端口），编辑完点「保存」
 3. **提交并推送**：
 
 ```bash
